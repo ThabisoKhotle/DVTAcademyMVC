@@ -1,0 +1,240 @@
+﻿@model PagedList.IPagedList<DataAccess.Models.Course>
+@using DVTAcademyMVC.Models;
+@using PagedList.Mvc;
+@*@{
+        Layout = null;
+    }*@
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+@*<script src="~/Scripts/bootstrap.min.js"></script>*@
+@*<link href="~/Content/bootstrap.css" rel="stylesheet" />*@
+
+<h1>Courses</h1>
+
+<div class="container" style="margin-top:3%">
+    <a href="#" class="btn btn-info" onclick="popModal(0)">Create New Course</a> <br />
+        <br />
+
+    @using (Html.BeginForm("Index", "Course", FormMethod.Get))
+    {
+        <p>
+            Find by name: @Html.TextBox("searchString", ViewBag.CurrentFilter as string)
+            <input type="submit" value="Search" />
+        </p>
+    }
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody id="LoadingStatus"></tbody>
+        <tbody id="InsertCourse"></tbody>
+    </table>
+
+    <div class="modal fade" id="MyModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                    <h4 id="ModalTitle"></h4>
+                </div>
+                <div class="modal-body">
+                    <form id="form">
+                        <fieldset id="SubmitCreateForm">
+                            <div class="form-group">
+                                @Html.TextBox("Code", null, new { @id = "Code", @class = "form-control", @placeholder = "Code*" })
+                            </div>
+                            <div class="form-group">
+                                @Html.TextBox("Name", null, new { @id = "Name", @class = "form-control", @placeholder = "Name*" })
+                            </div>
+                            <div class="form-group">
+                                @Html.TextBox("Description", null, new { @id = "Description", @class = "form-control", @placeholder = "Description*" })
+                            </div>
+
+                            <div class="form-group">
+                                <input type="button" value="Submit" class="btn btn-success" id="btnSubmit" />
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @foreach (var item in Model)
+    {
+        <input type="hidden" id="hiddenCourseID" />
+        <div class="modal fade" id="EditModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <a href="#" class="close" data-dismiss="modal">&times;</a>
+                        <h4>Edit Course</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form id="form">
+                            <fieldset id="SubmitEditForm2">
+                                <div class="form-group">
+                                    @Html.TextBox("Code", null, new { @id = "eCode", @class = "form-control", @placeholder = "Code*" })
+                                </div>
+                                <div class="form-group">
+                                    @Html.TextBox("Name", null, new { @id = "eName", @class = "form-control", @placeholder = "Name*" })
+                                </div>
+                                <div class="form-group">
+                                    @Html.TextBox("Description", null, new { @id = "eDescription", @class = "form-control", @placeholder = "Description*" })
+                                </div>
+
+                                <div class="form-group">
+                                    <input type="button" value="Submit" class="btn btn-success" id="btnSubmitEdit" />
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    }
+
+    <div class="modal fade" id="DeleteConfirmation">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                    <h4 id="ModalTitle">Delete Course</h4>
+                </div>
+                <div class="modal-body">
+                    <h4>Are you sure you want to delete?</h4>
+                </div>
+                <div class="modal-footer">
+                    @*<a href="#" class="btn btn-default" data-dismiss="modal">No</a>*@
+                    <a href="#" class="btn btn-success" onclick="DeleteCourse()">Yes</a>
+                    <a href="#" class="btn btn-primary" data-dismiss="modal">Cancel</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <br />
+    Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+
+    @Html.PagedListPager(Model, page => Url.Action("Index",
+        new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }))
+
+    <script>
+        $("#LoadingStatus").html("Loading...");
+        var url = "http://localhost:54232/Api/Course/GetAllCourses";
+        $.get(url, DataBind);
+        function DataBind(CourseList) {
+            var SetData = $("#InsertCourse");
+            for (var i = 0; i < CourseList.length; i++) {
+                var Data = "<tr class='row_" + CourseList[i].ID + "'>" +
+                    "<td>" + CourseList[i].ID + "</td>" +
+                    "<td>" + CourseList[i].Code + "</td>" +
+                    "<td>" + CourseList[i].Name + "</td>" +
+                    "<td>" + CourseList[i].Description + "</td>" +
+                    "<td>" + "<a href='#' class='btn btn-warning' onclick='UpdateCourse(" + CourseList[i].ID + ")'> <span class='glyphicon glyphicon-edit'></span></a>" + "</td>" +
+                    "<td>" + "<a href='#' class='btn btn-danger' onclick='DeleteCoursebtn(" + CourseList[i].ID + ")'> <span class='glyphicon glyphicon-trash'></span></a>" + "</td>"
+                "</tr>";
+                SetData.append(Data);
+                $("#LoadingStatus").html(" ");
+            }
+        }
+
+        function popModal() {
+            $("#form")[0].reset();
+            $("#ModalTitle").html("Add New Course");
+            $("#MyModal").modal();
+        }
+
+        $(document).ready(function () {
+
+            $("#btnSubmit").click(function () {
+                var code = $('#Code').val();
+                var name = $('#Name').val();
+                var desc = $('#Description').val();
+                var course = { Code: code, Name: name, Description: desc };
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Course/InsertCourse",
+                    data: course,
+                    success: function () {
+                        alert("Success!..");
+                        // window.location.href = "/Course/Index";
+                        $("#MyModal").modal("hide");
+                    }
+                })
+            })
+        })
+
+        var cID;
+        function UpdateCourse(ID) {
+            $.ajax({
+                type: "Get",
+                url: "http://localhost:54232/Api/Course/FindCourseByID?ID=" + ID,
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8',
+                success: function (data) {
+                    cID = data.ID;
+                    $("#eCode").val(data.Code);
+                    $("#eName").val(data.Name);
+                    $("#eDescription").val(data.Description);
+                    $("ModalTitle").html("Update Course Record");
+                    $("#EditModal").modal();
+                }
+            })
+        }
+
+        $(document).ready(function () {
+            $("#btnSubmitEdit").click(function () {
+                var course = {
+                    ID: cID,
+                    Code: $('#eCode').val(),
+                    Name: $('#eName').val(),
+                    Description: $('#eDescription').val()
+                }
+
+                $.ajax({
+                    type: "PUT",
+                    url: "http://localhost:54232/Api/Course/UpdateCourse",
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify(course),
+                    success: function () {
+                        alert("Success!..");
+                        $("#EditModal").modal("hide");
+                    }
+                })
+            })
+        })
+
+        var DeleteCoursebtn = function (ID) {
+            deleteID = ID;
+            $("#DeleteConfirmation").modal('show');
+        }
+        var DeleteCourse = function () {
+            var ID = deleteID;
+            $.ajax({
+                type: 'Delete',
+                url: "http://localhost:54232/Api/Course/DeleteCourse?ID=" + ID,
+                dataType: 'json',
+                contentType: 'application/json',
+                data: JSON.stringify(ID),
+                success: function () {
+                    alert("Deleted");
+                    $("#row_" + ID).remove();
+                    $("#DeleteConfirmation").modal("hide");
+                }
+            })
+        }
+    </script>
+</div>

@@ -1,0 +1,79 @@
+﻿
+
+@model PagedList.IPagedList<DataAccess.Models.Training>
+@using PagedList.Mvc;
+<h1>Training Schedule</h1>
+
+<br />
+@*<button class="btn btn-default" onclick="location.href = '@Url.Action("Create", "Training")';">
+    Create New Training
+</button>*@
+
+<div class="container" style="margin-top:3%">
+    <a href="#" class="btn btn-info" onclick="popModal(0)">Create New Training</a> <br />
+    <br />
+
+    @using (Html.BeginForm("Create", "Training", FormMethod.Get))
+    {
+        <p>
+            Search: @Html.TextBox("searchString", ViewBag.CurrentFilter as string)
+            <input type="submit" value="Search" />
+        </p>
+    }
+
+    <table class="table table-hover table-bordered">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.First().StartDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.First().EndDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.First().RegistrationClosingDate)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.First().Cost)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.First().Venue)
+            </th>
+            <th>
+                Options
+            </th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StartDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EndDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RegistrationClosingDate)
+                </td>
+                <th>
+                    @Html.DisplayNameFor(model => model.First().Cost)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.First().Venue)
+                </th>
+                <td>
+                    <link /> @Html.ActionLink("Edit", "UpdateCourse", new { ID = item.ID }) |
+                    <link /> @Html.ActionLink("Delete", "DeleteCourse", new { ID = item.ID })
+                </td>
+            </tr>
+        }
+    </table>
+
+    <br />
+    @Html.PagedListPager(Model, Page => Url.Action("Index", new { Page, pagesize = Model.PageSize }))
+    Showing @Model.FirstItemOnPage to @Model.LastItemOnPage of @Model.TotalItemCount Course
+
+
+
