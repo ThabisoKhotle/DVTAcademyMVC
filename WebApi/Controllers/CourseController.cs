@@ -14,16 +14,16 @@ namespace WebApi.Controllers
 
     public class CourseController : ApiController
     {
-        private readonly ICourse course;
+        private readonly ICourse _course = null;
 
         public CourseController(ICourse course)
         {
-            this.course = course;
+            this._course = course;
         }
 
         public CourseController()
         {
-            course = new CourseLogic();
+            _course = new CourseLogic();
         }
 
         [Route("Api/Course")]
@@ -33,7 +33,7 @@ namespace WebApi.Controllers
             //var courses = _course.GetAll();
             //return courses;
 
-            List<Course> courses = course.GetAll().ToList();
+            List<Course> courses = _course.GetAll().ToList();
 
             List<Course> modelCourseList = new List<Course>();
 
@@ -82,7 +82,7 @@ namespace WebApi.Controllers
                         Description = course.Description
                     };
 
-                    this.course.Update(EditCourse);
+                    this._course.Update(EditCourse);
                 }
                 catch (Exception e)
                 {
@@ -92,6 +92,27 @@ namespace WebApi.Controllers
             }
         }
 
+        [Route("Api/Course/FindCourseByID")]
+        [HttpGet]
+        public IHttpActionResult FindCourseByID(int ID)
+        {
+            try
+            {
+                Course course = _course.GetByID(ID);
+                var courses = new Course()
+                {
+                    ID = course.ID,
+                    Code = course.Code,
+                    Name = course.Name,
+                    Description = course.Description
+                };
+                return Ok(course);
+            }
+            catch (Exception ex)
+            {
+                return Ok("Course Not found!");
+            }
+        }
         // DELETE: api/Course/5
 
         [Route("api/Course/DeleteCourse")]
@@ -100,7 +121,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                course.Delete(id);
+                _course.Delete(id);
                 
             }
             catch (Exception e)
