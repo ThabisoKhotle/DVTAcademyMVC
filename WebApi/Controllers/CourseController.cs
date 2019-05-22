@@ -1,117 +1,129 @@
 ﻿using BusinessLogic.Abstract;
 using BusinessLogic.Concrete;
-using DataAccess.Context;
 using DataAccess.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Cors;
 
 namespace WebApi.Controllers
 {
-
+   
     public class CourseController : ApiController
     {
-        private readonly ICourse course;
+        private readonly ICourse _course ;
 
         public CourseController(ICourse course)
         {
-            this.course = course;
+            this._course = course;
         }
 
         public CourseController()
         {
-            course = new CourseLogic();
+            _course = new CourseLogic();
         }
 
-        [Route("Api/Course")]
+        [Route("Api/Course/GetAllCourses")]
         [HttpGet]
-        public IHttpActionResult GetCourse()
+        public IEnumerable<Course> GetCourse()
         {
-            //var courses = _course.GetAll();
-            //return courses;
-
-            List<Course> courses = course.GetAll().ToList();
-
-            List<Course> modelCourseList = new List<Course>();
-
-            foreach (Course item in courses)
-            {
-                modelCourseList.Add(new Course()
-                {
-                    ID = item.ID,
-                    Code = item.Code,
-                    Name = item.Name,
-                    Description = item.Description,
-
-                });
-            }
-
-            return Ok(modelCourseList);
+            var courses = _course.GetAll();
+            return courses;
         }
 
-        [Route("api/Course/AddCourse")]
-        [HttpPost]
-        public Course Post(Course course)
-        {
-            using (MVCDbContext entities = new MVCDbContext())
-            {
-                entities.Courses.Add(course);
-                entities.SaveChanges();
 
-            }
-
-            return course;
-        }
-
-        [Route("api/Course/EditCourse")]
-
-        //[HttpPost]
-        //// PUT: api/Course/5
-        public void Put(Course course)
+      
+        [Route("Api/Course/UpdateCourse")]
+        [HttpPut]
+        public IHttpActionResult UpdateCourse(Course course)
         {
             if (ModelState.IsValid)
             {
-                try
-                {
-                    Course EditCourse = new Course
-                    {
-                        ID = course.ID,
-                        Code = course.Code,
-                        Name = course.Name,
-                        Description = course.Description
-                    };
-
-                    this.course.Update(EditCourse);
-                }
-                catch
-                {
-
-                }
+                _course.Update(course);
+                return Ok(course.Name + "Updated Successfully");
+            }
+            else
+            {
+                return Ok("Could not UpdateCourse" + course.ID);
             }
         }
+        
+        //public IHttpActionResult Post([FromBody]Course item)
+        //{
+        //    try
+        //    {
+        //        _course.Insert(new Course
+        //        {
+        //            ID = item.ID,
+        //            Code = item.Code,
+        //            Description = item.Description,
+        //            Name = item.Name
+        //        });
+        //        _course.Save();
+        //        return Ok(item);
+        //    }
+        //    catch
+        //    {
+        //        return Ok();
+        //    }
+        //}
 
-        // DELETE: api/Course/5
-
-        [Route("api/Course/DeleteCourse")]
-        [HttpDelete]
-        public void Delete(int id)
+        [Route("Api/Course/FindCourseByID")]
+        [HttpGet]
+        public IHttpActionResult FindCourseByID(int ID)
         {
             try
             {
-                course.Delete(id);
-                
+                Course course = _course.GetByID(ID);
+
+                return Ok(course);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e);
-                throw;
+                return Ok("Course Not found!");
+            }
+        }
+        //public async Task<IHttpActionResult<Course>> FindCourseByID(int ID)
+        //{
+        //    var course = await _course.GetByID(ID);
+        //    if (course == null)
+        //    {
+        //        return Ok("Course Not Found");
+        //    }
+        //    return course;
+        //    //try
+        //    //{
+        //    //    Course course = await _course.GetByID.ExecuteAsync(ID);
+
+        //    //    return Ok(course);
+        //    //}
+        //    //catch (Exception ex)
+        //    //{
+        //    //    return Ok("Course Not found!");
+        //    //}
+        //}
+
+
+
+        [Route("Api/Course/DeleteCourse")]
+        [HttpDelete]
+        public IHttpActionResult DeleteCourse(int ID)
+        {
+            try
+            {
+                _course.Delete(ID);
+                _course.Save();
+                return Ok();
+            }
+            catch
+            {
+                return Ok();
             }
 
         }
 
-    }
-}
 
+    }
+
+}
