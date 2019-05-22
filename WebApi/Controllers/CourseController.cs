@@ -86,9 +86,10 @@ namespace WebApi.Controllers
 
                     this.course.Update(EditCourse);
                 }
-                catch
+                catch (Exception e)
                 {
-
+                    Console.WriteLine(e);
+                    throw;
                 }
             }
         }
