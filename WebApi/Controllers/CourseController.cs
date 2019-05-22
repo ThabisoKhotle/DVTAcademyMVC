@@ -68,8 +68,6 @@ namespace WebApi.Controllers
 
         [Route("api/Course/EditCourse")]
 
-        //[HttpPost]
-        //// PUT: api/Course/5
         public void Put(Course course)
         {
             if (ModelState.IsValid)
@@ -115,3 +113,4 @@ namespace WebApi.Controllers
 
     }
 }
+
